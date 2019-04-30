@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "lib": [
-      "es5",
       "es6"
     ],
     "rootDir": ".",
@@ -31,5 +30,6 @@
     "dist",
     "tmp"
   ],
+
   "compileOnSave": true
 }

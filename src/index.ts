@@ -1,3 +1,4 @@
+export {};
 export * from "./adapters/http/got/HttpGotAdapter";
 export * from "./adapters/http/got/IHttpGotPromise";
 export * from "./libs/errors/RequestError";

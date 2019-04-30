@@ -1,13 +1,7 @@
-///<reference path="node_modules/@types/node/index.d.ts"/>
-///<reference path="node_modules/@types/chai/index.d.ts"/>
-///<reference path="node_modules/@types/mocha/index.d.ts"/>
-
-
-import {Gulpclass, Task, SequenceTask, MergedTask} from "gulpclass";
 import * as fs from "fs";
 import * as glob from "glob";
+import * as gulp from "gulp";
 
-const gulp = require("gulp");
 const bump = require('gulp-bump');
 const del = require("del");
 const shell = require("gulp-shell");
@@ -16,179 +10,164 @@ const sourcemaps = require("gulp-sourcemaps");
 const ts = require("gulp-typescript");
 
 
-@Gulpclass()
-export class Gulpfile {
+// =======================================
+// General tasks
+// =======================================
 
-  // =======================================
-  // General tasks
-  // =======================================
+/**
+ * Cleans build folder.
+ */
 
-  /**
-   * Cleans build folder.
-   */
-  @Task()
-  clean(cb: Function) {
-    return del(["./build/**"], cb);
-  }
+gulp.task('clean', (cb:Function) => {
+  return del(["./build/**"],cb);
+});
 
-  /**
-   * Runs typescript files compilation.
-   */
-  @Task()
-  compile() {
-    return gulp.src("package.json", {read: false})
-      .pipe(shell(["tsc"]));
-  }
+/**
+ * Runs typescript files compilation.
+ */
+gulp.task('compile', () => {
+  return gulp.src("package.json", {read: false})
+    .pipe(shell(["tsc"]));
+});
 
-  // -------------------------------------------------------------------------
-  // Package
-  // -------------------------------------------------------------------------
+// -------------------------------------------------------------------------
+// Package
+// -------------------------------------------------------------------------
 
-  /**
-   * Copies all sources to the package directory.
-   */
-  @MergedTask()
-  packageCompile() {
-    const tsProject = ts.createProject("tsconfig.json", {typescript: require("typescript")});
-    const tsResult = gulp.src(["./src/**/*.ts", "./node_modules/@types/**/*.ts"])
-      .pipe(sourcemaps.init())
-      .pipe(tsProject());
+/**
+ * Copies all sources to the package directory.
+ */
+gulp.task('packageCompile',async () => {
+  const tsProject = ts.createProject("tsconfig.json", {typescript: require("typescript")});
+  const tsResult = gulp.src(["./src/**/*.ts", "./node_modules/@types/**/*.ts"])
+    .pipe(sourcemaps.init())
+    .pipe(tsProject());
 
-    return [
-      tsResult.dts.pipe(gulp.dest("./build/package")),
-      tsResult.js
-        .pipe(sourcemaps.write(".", {sourceRoot: "", includeContent: true}))
-        .pipe(gulp.dest("./build/package"))
-    ];
-  }
+  return [
+    tsResult.dts.pipe(gulp.dest("./build/package")),
+    tsResult.js
+      .pipe(sourcemaps.write(".", {sourceRoot: "", includeContent: true}))
+      .pipe(gulp.dest("./build/package"))
+  ];
+});
 
-  /**
-   * Removes /// <reference from compiled sources.
-   */
-  @Task()
-  packageReplaceReferences() {
-    return gulp.src("./build/package/**/*.d.ts")
-      .pipe(replace(`/// <reference types="node" />`, ""))
-      .pipe(replace(`/// <reference types="chai" />`, ""))
-      .pipe(gulp.dest("./build/package"));
-  }
+/**
+ * Removes /// <reference from compiled sources.
+ */
+gulp.task('packageReplaceReferences', () => {
+  return gulp.src("./build/package/**/*.d.ts")
+    .pipe(replace(`/// <reference types="node" />`, ""))
+    .pipe(replace(`/// <reference types="chai" />`, ""))
+    .pipe(gulp.dest("./build/package"));
+});
 
-  /**
-   * Copies README.md into the package.
-   */
-  @Task()
-  packageCopyReadme() {
-    return gulp.src("./README.md")
-      .pipe(replace(/```typescript([\s\S]*?)```/g, "```javascript$1```"))
-      .pipe(gulp.dest("./build/package"));
-  }
+/**
+ * Copies README.md into the package.
+ */
+gulp.task('packageCopyReadme', () => {
+  return gulp.src("./README.md")
+    .pipe(replace(/```typescript([\s\S]*?)```/g, "```javascript$1```"))
+    .pipe(gulp.dest("./build/package"));
+});
 
-  /**
-   * Copy package.json file to the package.
-   */
-  @Task()
-  packagePreparePackageFile() {
-    return gulp.src("./package.json")
-      .pipe(replace("\"private\": true,", "\"private\": false,"))
-      .pipe(gulp.dest("./build/package"));
-  }
+/**
+ * Copy package.json file to the package.
+ */
+gulp.task('packagePreparePackageFile', () => {
+  return gulp.src("./package.json")
+    .pipe(replace("\"private\": true,", "\"private\": false,"))
+    .pipe(gulp.dest("./build/package"));
+});
 
-  /**
-   * Creates a package that can be published to npm.
-   */
-  @SequenceTask()
-  package() {
-    return [
-      "clean",
-      "packageCompile",
-      [
-        "packageReplaceReferences",
-        "packagePreparePackageFile",
-        "packageCopyReadme",
-      ],
-    ];
-  }
+/**
+ * Creates a package that can be published to npm.
+ */
+gulp.task('package',
+  gulp.series(
+    "clean",
+    "packageCompile",
+    gulp.parallel(
+      "packageReplaceReferences",
+      "packagePreparePackageFile",
+      "packageCopyReadme",
+    )
+  )
+);
 
 
-  /**
-   * Generate index.ts declaration
-   */
-  @Task()
-  generateIndexTs() {
-    let _glob = glob.sync('src/**').filter((f: string) => /\.ts$/.test(f) && !/^(src\/packages|src\/index\.ts$)/.test(f));
-    let forIndexTs: string[] = ['// ---- Generated by gulp taskRef ----'];
-    let indexTs = '';
-    let settings: any = {};
-    if (fs.existsSync('./.typexs.json')) {
-      settings = require('./.typexs.json');
-      if (settings.packageExports) {
-        settings.packageExports.forEach((f: string) => {
-          forIndexTs.push(`export * from "${f}";`);
-        })
-      }
+/**
+ * Generate index.ts declaration
+ */
+
+gulp.task('generateIndexTs', () => {
+  let _glob = glob.sync('src/**').filter((f: string) => /\.ts$/.test(f) && !/^(src\/packages|src\/index\.ts$)/.test(f));
+  let forIndexTs: string[] = ['// ---- Generated by gulp taskRef ----'];
+  let indexTs = '';
+  let settings: any = {};
+  if (fs.existsSync('./.typexs.json')) {
+    settings = require('./.typexs.json');
+    if (settings.packageExports) {
+      settings.packageExports.forEach((f: string) => {
+        forIndexTs.push(`export * from "${f}";`);
+      })
     }
-    _glob.forEach((f: string) => {
-      if (!/\/\/ index\.ts ignore/.test(fs.readFileSync(f).toString('utf-8'))) {
-        forIndexTs.push(`export * from "./${f.replace(/(^src\/)|((\.d)?\.ts$)/g, '')}";`);
-      }
-    });
-    fs.writeFileSync('./src/index.ts', forIndexTs.join('\n'));
-    return;
   }
+  _glob.forEach((f: string) => {
+    if (!/\/\/ index\.ts ignore/.test(fs.readFileSync(f).toString('utf-8'))) {
+      forIndexTs.push(`export * from "./${f.replace(/(^src\/)|((\.d)?\.ts$)/g, '')}";`);
+    }
+  });
+  fs.writeFileSync('./src/index.ts', forIndexTs.join('\n'));
+  return;
+});
 
 
-  // -------------------------------------------------------------------------
-  // Main Packaging and Publishing tasks
-  // -------------------------------------------------------------------------
+// -------------------------------------------------------------------------
+// Main Packaging and Publishing tasks
+// -------------------------------------------------------------------------
 
-  /**
-   * Publishes a package to npm from ./build/package directory.
-   */
-  @Task()
-  packagePublish() {
-    return gulp.src("package.json", {read: false})
-      .pipe(shell([
-        "cd ./build/package && npm publish"
-      ]));
-  }
+/**
+ * Publishes a package to npm from ./build/package directory.
+ */
+gulp.task('packagePublish', () => {
+  return gulp.src("package.json", {read: false})
+    .pipe(shell([
+      "cd ./build/package && npm publish"
+    ]));
+});
 
-  /**
-   * Publishes a package to npm from ./build/package directory with @next tag.
-   */
-  @Task()
-  packagePublishNext() {
-    return gulp.src("package.json", {read: false})
-      .pipe(shell([
-        "cd ./build/package && npm publish --tag next"
-      ]));
-  }
+/**
+ * Publishes a package to npm from ./build/package directory with @next tag.
+ */
+gulp.task('packagePublishNext', () => {
+  return gulp.src("package.json", {read: false})
+    .pipe(shell([
+      "cd ./build/package && npm publish --tag next"
+    ]));
+});
 
-  // -------------------------------------------------------------------------
-  // Versioning
-  // -------------------------------------------------------------------------
+// -------------------------------------------------------------------------
+// Versioning
+// -------------------------------------------------------------------------
 
-  @Task()
-  vpatch() {
-    return gulp.src('package.json')
-      .pipe(bump({type: "patch"}))
-      .pipe(gulp.dest('./'));
+gulp.task('vpatch', () => {
+  return gulp.src('package.json')
+    .pipe(bump({type: "patch"}))
+    .pipe(gulp.dest('./'));
 
-  }
+});
 
-  @Task()
-  vminor() {
-    return gulp.src('package.json')
-      .pipe(bump({type: "minor"}))
-      .pipe(gulp.dest('./'));
+gulp.task('vminor', () => {
+  return gulp.src('package.json')
+    .pipe(bump({type: "minor"}))
+    .pipe(gulp.dest('./'));
 
-  }
+});
 
-  @Task()
-  vmajor() {
-    return gulp.src('package.json')
-      .pipe(bump({type: "major"}))
-      .pipe(gulp.dest('./'));
+gulp.task('vmajor', () => {
+  return gulp.src('package.json')
+    .pipe(bump({type: "major"}))
+    .pipe(gulp.dest('./'));
 
-  }
+});
 
-}
