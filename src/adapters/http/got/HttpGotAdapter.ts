@@ -39,6 +39,19 @@ export class HttpGotAdapter implements IHttp {
 
   private static wrap(url: string, method: string, options: IHttpOptions) {
     const GOT = this.GOT;
+    /*
+        if (_.has(options, 'responseType')) {
+          if (options.responseType == 'json') {
+            options.json = true;
+          } else if (options.responseType == 'buffer') {
+            (<any>options).stream = true;
+          }
+        }
+    */
+    if (_.has(options, 'passBody')) {
+      (<any>options).resolveBodyOnly = _.get(options, 'passBody', false);
+    }
+
     if (_.has(options, 'proxy') && options.proxy) {
       let proxyUrl = new URL(options.proxy);
       let targetUrl = new URL(url);
@@ -93,11 +106,18 @@ export class HttpGotAdapter implements IHttp {
       return stream;
     }
 
+
     let p = null;
     if (options) {
       p = GOT[method](url, options)
     } else {
       p = GOT[method](url)
+    }
+
+    if (_.get(options, 'passBody', false)) {
+      p = p.then((res:any) => {
+        return res.body;
+      })
     }
 
     return p.catch((err: Error) => {
@@ -125,6 +145,15 @@ export class HttpGotAdapter implements IHttp {
   post(url: string, options?: IHttpPostOptions): IHttpGotPromise<any>;
   post(url: string, options?: IHttpPostOptions & { stream: boolean }): IHttpStream<any>;
   post(url: string, options?: IHttpPostOptions & { stream: boolean }): IHttpGotPromise<any> | IHttpStream<any> {
+    /*
+    if(_.has(options,'body')){
+      if(!_.isString(options.body) && !_.isBuffer(options.body)){
+        if(_.get(options,'json',false)){
+          options.body = JSON.stringify(options.body);
+        }
+
+      }
+    }*/
     return HttpGotAdapter.wrap(url, 'post', options);
   }
 
