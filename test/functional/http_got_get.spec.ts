@@ -8,6 +8,8 @@ import {RequestError} from "../../src/libs/errors/RequestError";
 const HTTP_URL = 'http://example.com';
 const HTTPS_URL = 'https://example.com';
 
+const HTTPBIN_URL = 'http://httpbin.org/get';
+
 const HTTP_URL_ERR = 'http://example-example-example.com/';
 const HTTPS_URL_ERR = 'https://example-example-example.com/';
 
@@ -17,7 +19,7 @@ let http: IHttp;
  * TODO
  */
 @suite('functional/http_got') @timeout(20000)
-class Http_gotSpec {
+class Http_got_getSpec {
 
 
   static async before() {
@@ -41,6 +43,16 @@ class Http_gotSpec {
   async 'http get promise'() {
     let res = await http.get(HTTP_URL);
     expect(res.body).to.contain('This domain is established to be used for illustrative examples in documents.');
+  }
+
+
+  /**
+   * http.get as promise json
+   */
+  @test
+  async 'http get promise as json'() {
+    let res = await http.get(HTTPBIN_URL, {json: true});
+    expect(res.body).to.deep.include({args: {}, url: "https://httpbin.org/get"});
   }
 
   /**
@@ -123,6 +135,16 @@ class Http_gotSpec {
       expect(err).to.be.instanceOf(RequestError);
     }
   }
+
+  /**
+   * http.get promise pass body
+   */
+  @test
+  async 'http get promise pass body'() {
+    let res = await http.get(HTTPBIN_URL, {json: true, passBody: true});
+    expect(res).to.be.deep.include({args: {}});
+  }
+
 
 }
 
