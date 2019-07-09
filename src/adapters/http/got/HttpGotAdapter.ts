@@ -27,15 +27,7 @@ export class HttpGotAdapter implements IHttp {
 
   private static wrap(url: string, method: string, options: IHttpOptions) {
     const GOT = this.GOT;
-    /*
-        if (_.has(options, 'responseType')) {
-          if (options.responseType == 'json') {
-            options.json = true;
-          } else if (options.responseType == 'buffer') {
-            (<any>options).stream = true;
-          }
-        }
-    */
+
     if (_.has(options, 'passBody')) {
       (<any>options).resolveBodyOnly = _.get(options, 'passBody', false);
     }
@@ -48,35 +40,35 @@ export class HttpGotAdapter implements IHttp {
       const targetProtocol = targetUrl.protocol.replace(':', '').toLowerCase();
 
 
-      if (proxyProtocol == 'http' && targetProtocol == 'http') {
+      if (proxyProtocol === 'http' && targetProtocol === 'http') {
         options.agent = httpOverHttp({
           proxy: {
             host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port),
+            port: parseInt(proxyUrl.port, 0),
             headers: {}
           }
         });
-      } else if (proxyProtocol == 'http' && targetProtocol == 'https') {
+      } else if (proxyProtocol === 'http' && targetProtocol === 'https') {
         options.agent = httpsOverHttp({
           proxy: {
             host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port),
+            port: parseInt(proxyUrl.port, 0),
             headers: {}
           }
         });
-      } else if (proxyProtocol == 'https' && targetProtocol == 'http') {
+      } else if (proxyProtocol === 'https' && targetProtocol === 'http') {
         options.agent = httpOverHttps({
           proxy: {
             host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port),
+            port: parseInt(proxyUrl.port, 0),
             headers: {}
           }
         });
-      } else if (proxyProtocol == 'https' && targetProtocol == 'https') {
+      } else if (proxyProtocol === 'https' && targetProtocol === 'https') {
         options.agent = httpsOverHttps({
           proxy: {
             host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port),
+            port: parseInt(proxyUrl.port, 0),
             headers: {}
           }
         });
@@ -85,10 +77,18 @@ export class HttpGotAdapter implements IHttp {
 
     if (_.has(options, 'stream') && _.get(options, 'stream', false)) {
       const stream = <any>GOT(url, options);
+      stream._ended = false;
+      stream.once('end', () => {
+        stream._ended = true;
+      });
       stream.asPromise = (): IHttpGotPromise<any> => {
         return <IHttpGotPromise<any>>new Promise<any>((resolve, reject) => {
-          stream.once('end', resolve);
-          stream.once('error', reject);
+          if (!stream._ended) {
+            stream.once('end', resolve);
+            stream.once('error', reject);
+          } else {
+            resolve();
+          }
         });
       };
       return stream;
@@ -109,11 +109,11 @@ export class HttpGotAdapter implements IHttp {
     }
 
     return p.catch((err: Error) => {
-      if (err.name == 'RequestError') {
+      if (err.name === 'RequestError') {
         const e = new RequestError(err.message);
         _.assign(e, err);
         throw e;
-      } else if (err.name == 'TimeoutError') {
+      } else if (err.name === 'TimeoutError') {
         const e = new TimeoutError(err.message);
         _.assign(e, err);
         throw e;
