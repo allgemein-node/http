@@ -1,13 +1,17 @@
-import * as _ from "lodash";
-import {ILoggerApi} from "commons-base/browser"
-import {IHttp} from "./IHttp";
-import {ClassType} from "../Constants";
-import {HttpGotAdapter} from "../../adapters/http/got/HttpGotAdapter";
+import * as _ from 'lodash';
+import {ILoggerApi} from 'commons-base/browser';
+import {IHttp} from './IHttp';
+import {ClassType} from '../Constants';
+import {HttpGotAdapter} from '../../adapters/http/got/HttpGotAdapter';
 
 
 export class HttpFactory {
 
   private static __self__: HttpFactory;
+
+  static CLASSES: ClassType<IHttp>[] = [HttpGotAdapter];
+
+  static __loaded__ = false;
 
   private adapters: { [key: string]: ClassType<IHttp> } = {};
 
@@ -28,9 +32,23 @@ export class HttpFactory {
   /**
    * Initialize factory and default got adapter (if installed)
    */
-  static async load() {
-    await this.$().register(HttpGotAdapter);
+  static load() {
+    if (!this.__loaded__) {
+      this.CLASSES.forEach(c => {
+        this.$().register(c);
+      });
+      this.__loaded__ = true;
+    }
     return this.$();
+  }
+
+  /**
+   * Init factory and create an http adapter
+   *
+   * @param name
+   */
+  static create(name: string = null) {
+    return this.load().create(name);
   }
 
   /**
@@ -38,11 +56,11 @@ export class HttpFactory {
    *
    * @param clazz
    */
-  async register(clazz: ClassType<IHttp>) {
+  register(clazz: ClassType<IHttp>) {
     const adapter: IHttp = Reflect.construct(clazz, []);
     if (adapter) {
-      if (!_.has(this.adapters, adapter.name) && await adapter.isAvailable()) {
-        if (_.keys(this.adapters).length == 0) {
+      if (!_.has(this.adapters, adapter.name) && adapter.isAvailable()) {
+        if (_.keys(this.adapters).length === 0) {
           this.defaultAdapter = adapter.name;
         }
         this.adapters[adapter.name] = clazz;
@@ -82,15 +100,13 @@ export class HttpFactory {
       name = this.defaultAdapter;
     }
     if (!name) {
-      throw new Error('http factory: no default adapter defined. ' + _.keys(this.adapters))
+      throw new Error('http factory: no default adapter defined. ' + _.keys(this.adapters));
     }
 
     if (_.has(this.adapters, name)) {
       return Reflect.construct(this.adapters[name], []);
     } else {
-      throw new Error('http factory: no adapter with "' + name + '" defined.')
+      throw new Error('http factory: no adapter with "' + name + '" defined.');
     }
-
-
   }
 }
