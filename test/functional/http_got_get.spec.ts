@@ -1,9 +1,9 @@
-import {suite, test, timeout} from "mocha-typescript";
-import {expect} from "chai";
-import {HttpFactory} from "../../src/libs/http/HttpFactory";
-import {IHttp} from "../../src/libs/http/IHttp";
-import {Transform} from "stream";
-import {RequestError} from "../../src/libs/errors/RequestError";
+import {suite, test, timeout} from 'mocha-typescript';
+import {expect} from 'chai';
+import {HttpFactory} from '../../src/libs/http/HttpFactory';
+import {IHttp} from '../../src/libs/http/IHttp';
+import {Transform} from 'stream';
+import {RequestError} from '../../src/libs/errors/RequestError';
 
 const HTTP_URL = 'http://example.com';
 const HTTPS_URL = 'https://example.com';
@@ -32,7 +32,7 @@ class Http_got_getSpec {
    */
   @test
   async 'config'() {
-    let adapterDefault = await HttpFactory.$().getDefault();
+    const adapterDefault = await HttpFactory.$().getDefault();
     expect(adapterDefault).to.be.eq('got');
   }
 
@@ -41,7 +41,7 @@ class Http_got_getSpec {
    */
   @test
   async 'http get promise'() {
-    let res = await http.get(HTTP_URL);
+    const res = await http.get(HTTP_URL);
     expect(res.body).to.contain('This domain is established to be used for illustrative examples in documents.');
   }
 
@@ -51,8 +51,8 @@ class Http_got_getSpec {
    */
   @test
   async 'http get promise as json'() {
-    let res = await http.get(HTTPBIN_URL, {json: true});
-    expect(res.body).to.deep.include({args: {}, url: "https://httpbin.org/get"});
+    const res = await http.get(HTTPBIN_URL, {json: true});
+    expect(res.body).to.deep.include({args: {}, url: 'https://httpbin.org/get'});
   }
 
   /**
@@ -61,7 +61,7 @@ class Http_got_getSpec {
   @test
   async 'http get stream'() {
     let content = '';
-    let res = http.get(HTTP_URL, {stream: true});
+    const res = http.get(HTTP_URL, {stream: true});
     res.pipe(new Transform({
       transform(chunk: any, encoding: string, callback: (error?: (Error | null), data?: any) => void): void {
         content = content + chunk.toString();
@@ -76,7 +76,7 @@ class Http_got_getSpec {
    */
   @test
   async 'https get promise'() {
-    let res = await http.get(HTTPS_URL);
+    const res = await http.get(HTTPS_URL);
     expect(res.body).to.contain('This domain is established to be used for illustrative examples in documents.');
   }
 
@@ -86,7 +86,7 @@ class Http_got_getSpec {
   @test
   async 'https get stream'() {
     let content = '';
-    let res = http.get(HTTPS_URL, {stream: true});
+    const res = http.get(HTTPS_URL, {stream: true});
     res.pipe(new Transform({
       transform(chunk: any, encoding: string, callback: (error?: (Error | null), data?: any) => void): void {
         content = content + chunk.toString();
@@ -103,8 +103,8 @@ class Http_got_getSpec {
   @test
   async 'http get promise fail'() {
     try {
-      let res = await http.get(HTTP_URL_ERR, {timeout: 500});
-      expect(true).to.be.false
+      const res = await http.get(HTTP_URL_ERR, {timeout: 500});
+      expect(true).to.be.false;
     } catch (err) {
       expect(err).to.be.instanceOf(RequestError);
     }
@@ -116,8 +116,8 @@ class Http_got_getSpec {
   @test
   async 'https get promise fail'() {
     try {
-      let res = await http.get(HTTPS_URL_ERR, {timeout: 500});
-      expect(true).to.be.false
+      const res = await http.get(HTTPS_URL_ERR, {timeout: 500});
+      expect(true).to.be.false;
     } catch (err) {
       expect(err).to.be.instanceOf(RequestError);
     }
@@ -129,8 +129,8 @@ class Http_got_getSpec {
   @test
   async 'http get promise timeout'() {
     try {
-      let res = await http.get(HTTP_URL_ERR, {timeout: 10});
-      expect(true).to.be.false
+      const res = await http.get(HTTP_URL_ERR, {timeout: 10});
+      expect(true).to.be.false;
     } catch (err) {
       expect(err).to.be.instanceOf(RequestError);
     }
@@ -141,7 +141,7 @@ class Http_got_getSpec {
    */
   @test
   async 'http get promise pass body'() {
-    let res = await http.get(HTTPBIN_URL, {json: true, passBody: true});
+    const res = await http.get(HTTPBIN_URL, {json: true, passBody: true});
     expect(res).to.be.deep.include({args: {}});
   }
 
