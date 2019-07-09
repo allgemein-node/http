@@ -1,6 +1,6 @@
-import * as http from "http";
-import * as nodeStream from "stream";
-import {EventEmitter} from "events";
+import * as http from 'http';
+import * as nodeStream from 'stream';
+import {EventEmitter} from 'events';
 
 
 export type IHttpPromise<B extends Buffer | string | object> = Promise<IHttpResponse<B>> & EventEmitter;

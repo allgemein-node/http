@@ -1,4 +1,4 @@
-import {IHttpOptions} from "./IHttpOptions";
+import {IHttpOptions} from './IHttpOptions';
 
 export interface IHttpPostOptions extends IHttpOptions {
   body: any;

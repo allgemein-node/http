@@ -1,5 +1,5 @@
-import {IHttpOptions} from "./IHttpOptions";
+import {IHttpOptions} from './IHttpOptions';
 
-export interface IHttpDeleteOptions extends IHttpOptions{
+export interface IHttpDeleteOptions extends IHttpOptions {
 
 }

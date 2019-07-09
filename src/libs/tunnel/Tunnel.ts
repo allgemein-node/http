@@ -20,21 +20,21 @@
 //   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import * as http from "http";
-import * as https from "https";
-import {TunnelingAgent} from "./TunnelingAgent";
-import * as net from "net";
-import * as tls from "tls";
-import {Agent} from "http";
+import * as http from 'http';
+import * as https from 'https';
+import {TunnelingAgent} from './TunnelingAgent';
+import * as net from 'net';
+import * as tls from 'tls';
+import {Agent} from 'http';
 
 export function httpOverHttp(options: any) {
-  let agent = new TunnelingAgent(options);
+  const agent = new TunnelingAgent(options);
   agent.request = http.request;
   return <Agent><any>agent;
 }
 
 export function httpsOverHttp(options: any) {
-  let agent = new TunnelingAgent(options);
+  const agent = new TunnelingAgent(options);
   agent.request = http.request;
   agent.createSocket = createSecureSocket;
   agent.defaultPort = 443;
@@ -42,13 +42,13 @@ export function httpsOverHttp(options: any) {
 }
 
 export function httpOverHttps(options: any) {
-  let agent = new TunnelingAgent(options);
+  const agent = new TunnelingAgent(options);
   agent.request = https.request;
   return <Agent><any>agent;
 }
 
 export function httpsOverHttps(options: any) {
-  let agent = new TunnelingAgent(options);
+  const agent = new TunnelingAgent(options);
   agent.request = https.request;
   agent.createSocket = createSecureSocket;
   agent.defaultPort = 443;
@@ -56,16 +56,16 @@ export function httpsOverHttps(options: any) {
 }
 
 function createSecureSocket(options: any, cb: Function) {
-  let self = this;
+  const self = this;
   TunnelingAgent.prototype.createSocket.call(self, options, function (socket: net.Socket) {
-    let hostHeader = options.request.getHeader('host');
-    let tlsOptions = TunnelingAgent.mergeOptions({}, self.options, {
+    const hostHeader = options.request.getHeader('host');
+    const tlsOptions = TunnelingAgent.mergeOptions({}, self.options, {
       socket: socket,
       servername: hostHeader ? hostHeader.replace(/:.*$/, '') : options.host
     });
 
     // 0 is dummy port for v0.6
-    let secureSocket = tls.connect(0, tlsOptions);
+    const secureSocket = tls.connect(0, tlsOptions);
     self.sockets[self.sockets.indexOf(socket)] = secureSocket;
     cb(secureSocket);
   });

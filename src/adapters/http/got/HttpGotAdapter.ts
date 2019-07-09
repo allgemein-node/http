@@ -1,40 +1,28 @@
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
-import {URL} from "url";
-import {ILoggerApi} from "commons-base";
-import {IHttp} from "../../../libs/http/IHttp";
-import {IHttpGetOptions} from "../../../libs/http/IHttpGetOptions";
-import {IHttpDeleteOptions} from "../../../libs/http/IHttpDeleteOptions";
-import {IHttpPostOptions} from "../../../libs/http/IHttpPostOptions";
-import {IHttpPutOptions} from "../../../libs/http/IHttpPutOptions";
-import {IHttpHeadOptions} from "../../../libs/http/IHttpHeadOptions";
-import {IHttpPatchOptions} from "../../../libs/http/IHttpPatchOptions";
-import {IHttpGotPromise} from "./IHttpGotPromise";
-import {IHttpStream} from "../../../libs/http/IHttpResponse";
-import {IHttpOptions} from "../../../libs/http/IHttpOptions";
+import {URL} from 'url';
+import {ILoggerApi} from 'commons-base';
+import {IHttp} from '../../../libs/http/IHttp';
+import {IHttpGetOptions} from '../../../libs/http/IHttpGetOptions';
+import {IHttpDeleteOptions} from '../../../libs/http/IHttpDeleteOptions';
+import {IHttpPostOptions} from '../../../libs/http/IHttpPostOptions';
+import {IHttpPutOptions} from '../../../libs/http/IHttpPutOptions';
+import {IHttpHeadOptions} from '../../../libs/http/IHttpHeadOptions';
+import {IHttpPatchOptions} from '../../../libs/http/IHttpPatchOptions';
+import {IHttpGotPromise} from './IHttpGotPromise';
+import {IHttpStream} from '../../../libs/http/IHttpResponse';
+import {IHttpOptions} from '../../../libs/http/IHttpOptions';
 
-import {httpOverHttp, httpOverHttps, httpsOverHttp, httpsOverHttps} from "./../../../libs/tunnel/Tunnel";
-import {RequestError} from "../../../libs/errors/RequestError";
-import {TimeoutError} from "../../../libs/errors/TimeoutError";
+import {httpOverHttp, httpOverHttps, httpsOverHttp, httpsOverHttps} from './../../../libs/tunnel/Tunnel';
+import {RequestError} from '../../../libs/errors/RequestError';
+import {TimeoutError} from '../../../libs/errors/TimeoutError';
 
 
 export class HttpGotAdapter implements IHttp {
 
-  readonly name: string = 'got';
-
   static GOT: any;
 
-  async isAvailable(logger?: ILoggerApi) {
-    try {
-      HttpGotAdapter.GOT = await import("got");
-      return true;
-    } catch (e) {
-      if (logger) {
-        logger.warn('http got adapter: required got package is not installed. Adapter will not be used.')
-      }
-      return false;
-    }
-  }
+  readonly name: string = 'got';
 
 
   private static wrap(url: string, method: string, options: IHttpOptions) {
@@ -53,11 +41,11 @@ export class HttpGotAdapter implements IHttp {
     }
 
     if (_.has(options, 'proxy') && options.proxy) {
-      let proxyUrl = new URL(options.proxy);
-      let targetUrl = new URL(url);
+      const proxyUrl = new URL(options.proxy);
+      const targetUrl = new URL(url);
 
-      let proxyProtocol = proxyUrl.protocol.replace(':', '').toLowerCase();
-      let targetProtocol = targetUrl.protocol.replace(':', '').toLowerCase();
+      const proxyProtocol = proxyUrl.protocol.replace(':', '').toLowerCase();
+      const targetProtocol = targetUrl.protocol.replace(':', '').toLowerCase();
 
 
       if (proxyProtocol == 'http' && targetProtocol == 'http') {
@@ -96,7 +84,7 @@ export class HttpGotAdapter implements IHttp {
     }
 
     if (_.has(options, 'stream') && _.get(options, 'stream', false)) {
-      let stream = <any>GOT(url, options);
+      const stream = <any>GOT(url, options);
       stream.asPromise = (): IHttpGotPromise<any> => {
         return <IHttpGotPromise<any>>new Promise<any>((resolve, reject) => {
           stream.once('end', resolve);
@@ -109,15 +97,15 @@ export class HttpGotAdapter implements IHttp {
 
     let p = null;
     if (options) {
-      p = GOT[method](url, options)
+      p = GOT[method](url, options);
     } else {
-      p = GOT[method](url)
+      p = GOT[method](url);
     }
 
     if (_.get(options, 'passBody', false)) {
-      p = p.then((res:any) => {
+      p = p.then((res: any) => {
         return res.body;
-      })
+      });
     }
 
     return p.catch((err: Error) => {
@@ -131,7 +119,22 @@ export class HttpGotAdapter implements IHttp {
         throw e;
       }
       throw err;
-    })
+    });
+  }
+
+
+  isAvailable(logger?: ILoggerApi) {
+    try {
+      if (!HttpGotAdapter.GOT) {
+        HttpGotAdapter.GOT = require('got');
+      }
+      return true;
+    } catch (e) {
+      if (logger) {
+        logger.warn('http got adapter: required got package is not installed. Adapter will not be used.');
+      }
+      return false;
+    }
   }
 
 
