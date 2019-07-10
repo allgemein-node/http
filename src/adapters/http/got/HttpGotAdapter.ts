@@ -16,6 +16,7 @@ import {IHttpOptions} from '../../../libs/http/IHttpOptions';
 import {httpOverHttp, httpOverHttps, httpsOverHttp, httpsOverHttps} from './../../../libs/tunnel/Tunnel';
 import {RequestError} from '../../../libs/errors/RequestError';
 import {TimeoutError} from '../../../libs/errors/TimeoutError';
+import * as http from 'http';
 
 
 export class HttpGotAdapter implements IHttp {
@@ -78,14 +79,21 @@ export class HttpGotAdapter implements IHttp {
     if (_.has(options, 'stream') && _.get(options, 'stream', false)) {
       const stream = <any>GOT(url, options);
       stream._ended = false;
-      stream.once('end', () => {
-        stream._ended = true;
+      stream.once('response', (res: http.IncomingMessage) => {
+        res.once('end', () => {
+          stream._ended = true;
+          stream.emit('finished');
+        });
       });
       stream.asPromise = (): IHttpGotPromise<any> => {
         return <IHttpGotPromise<any>>new Promise<any>((resolve, reject) => {
           if (!stream._ended) {
-            stream.once('end', resolve);
-            stream.once('error', reject);
+            stream.once('finished', () => {
+              resolve();
+            });
+            stream.once('error', (err: Error) => {
+              reject(err);
+            });
           } else {
             resolve();
           }
@@ -148,15 +156,6 @@ export class HttpGotAdapter implements IHttp {
   post(url: string, options?: IHttpPostOptions): IHttpGotPromise<any>;
   post(url: string, options?: IHttpPostOptions & { stream: boolean }): IHttpStream<any>;
   post(url: string, options?: IHttpPostOptions & { stream: boolean }): IHttpGotPromise<any> | IHttpStream<any> {
-    /*
-    if(_.has(options,'body')){
-      if(!_.isString(options.body) && !_.isBuffer(options.body)){
-        if(_.get(options,'json',false)){
-          options.body = JSON.stringify(options.body);
-        }
-
-      }
-    }*/
     return HttpGotAdapter.wrap(url, 'post', options);
   }
 
