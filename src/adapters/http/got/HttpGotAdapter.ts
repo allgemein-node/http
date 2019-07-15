@@ -41,12 +41,17 @@ export class HttpGotAdapter implements IHttp {
       const hostName = proxyUrl.hostname;
       const port = parseInt(proxyUrl.port, 0);
 
-      const tunnelOptions = {
+      const tunnelOptions: any = {
         protocol: proxyUrl.protocol,
         host: hostName,
         port: port,
         headers: proxyHeaders
       };
+
+      if (_.has(options, 'rejectUnauthorized')) {
+        tunnelOptions.rejectUnauthorized = options.rejectUnauthorized;
+      }
+
 
       options.agent = <any>new HttpGotAdapter.ProxyAgent(tunnelOptions);
     } else if (_.has(options, 'proxy') && options.proxy && !HttpGotAdapter.ProxyAgent) {
