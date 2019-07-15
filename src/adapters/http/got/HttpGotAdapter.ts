@@ -12,16 +12,17 @@ import {IHttpPatchOptions} from '../../../libs/http/IHttpPatchOptions';
 import {IHttpGotPromise} from './IHttpGotPromise';
 import {IHttpStream} from '../../../libs/http/IHttpResponse';
 import {IHttpOptions} from '../../../libs/http/IHttpOptions';
-
-import {httpOverHttp, httpOverHttps, httpsOverHttp, httpsOverHttps} from './../../../libs/tunnel/Tunnel';
 import {RequestError} from '../../../libs/errors/RequestError';
 import {TimeoutError} from '../../../libs/errors/TimeoutError';
 import * as http from 'http';
+import {ClassType} from '../../../libs/Constants';
 
 
 export class HttpGotAdapter implements IHttp {
 
   static GOT: any;
+
+  static ProxyAgent: ClassType<any>;
 
   readonly name: string = 'got';
 
@@ -34,46 +35,20 @@ export class HttpGotAdapter implements IHttp {
     }
 
     if (_.has(options, 'proxy') && options.proxy) {
+      const proxyHeaders = options.proxyHeaders || {};
       const proxyUrl = new URL(options.proxy);
-      const targetUrl = new URL(url);
 
-      const proxyProtocol = proxyUrl.protocol.replace(':', '').toLowerCase();
-      const targetProtocol = targetUrl.protocol.replace(':', '').toLowerCase();
+      const hostName = proxyUrl.hostname;
+      const port = parseInt(proxyUrl.port, 0);
 
+      const tunnelOptions = {
+        protocol: proxyUrl.protocol,
+        host: hostName,
+        port: port,
+        headers: proxyHeaders
+      };
 
-      if (proxyProtocol === 'http' && targetProtocol === 'http') {
-        options.agent = httpOverHttp({
-          proxy: {
-            host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port, 0),
-            headers: {}
-          }
-        });
-      } else if (proxyProtocol === 'http' && targetProtocol === 'https') {
-        options.agent = httpsOverHttp({
-          proxy: {
-            host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port, 0),
-            headers: {}
-          }
-        });
-      } else if (proxyProtocol === 'https' && targetProtocol === 'http') {
-        options.agent = httpOverHttps({
-          proxy: {
-            host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port, 0),
-            headers: {}
-          }
-        });
-      } else if (proxyProtocol === 'https' && targetProtocol === 'https') {
-        options.agent = httpsOverHttps({
-          proxy: {
-            host: proxyUrl.hostname,
-            port: parseInt(proxyUrl.port, 0),
-            headers: {}
-          }
-        });
-      }
+      options.agent = <any>new HttpGotAdapter.ProxyAgent(tunnelOptions);
     }
 
     if (_.has(options, 'stream') && _.get(options, 'stream', false)) {
@@ -134,6 +109,7 @@ export class HttpGotAdapter implements IHttp {
   isAvailable(logger?: ILoggerApi) {
     try {
       if (!HttpGotAdapter.GOT) {
+        HttpGotAdapter.ProxyAgent = require('proxy-agent');
         HttpGotAdapter.GOT = require('got');
       }
       return true;
