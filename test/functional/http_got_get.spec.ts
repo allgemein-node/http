@@ -67,7 +67,7 @@ class Http_got_getSpec {
         content = content + chunk.toString();
       }
     }));
-    await res.asPromise();
+    const promiseResults = await res.asPromise();
     expect(content).to.contain('This domain is established to be used for illustrative examples in documents.');
   }
 
