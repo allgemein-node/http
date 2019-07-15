@@ -12,5 +12,3 @@ export * from './libs/http/IHttpPatchOptions';
 export * from './libs/http/IHttpPostOptions';
 export * from './libs/http/IHttpPutOptions';
 export * from './libs/http/IHttpResponse';
-export * from './libs/tunnel/Tunnel';
-export * from './libs/tunnel/TunnelingAgent';
