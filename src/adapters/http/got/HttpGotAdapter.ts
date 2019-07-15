@@ -34,7 +34,7 @@ export class HttpGotAdapter implements IHttp {
       (<any>options).resolveBodyOnly = _.get(options, 'passBody', false);
     }
 
-    if (_.has(options, 'proxy') && options.proxy) {
+    if (_.has(options, 'proxy') && options.proxy && HttpGotAdapter.ProxyAgent) {
       const proxyHeaders = options.proxyHeaders || {};
       const proxyUrl = new URL(options.proxy);
 
@@ -49,6 +49,8 @@ export class HttpGotAdapter implements IHttp {
       };
 
       options.agent = <any>new HttpGotAdapter.ProxyAgent(tunnelOptions);
+    } else if (_.has(options, 'proxy') && options.proxy && !HttpGotAdapter.ProxyAgent) {
+      throw new Error('proxy agent not imported');
     }
 
     if (_.has(options, 'stream') && _.get(options, 'stream', false)) {
@@ -109,8 +111,14 @@ export class HttpGotAdapter implements IHttp {
   isAvailable(logger?: ILoggerApi) {
     try {
       if (!HttpGotAdapter.GOT) {
-        HttpGotAdapter.ProxyAgent = require('proxy-agent');
         HttpGotAdapter.GOT = require('got');
+        try {
+          HttpGotAdapter.ProxyAgent = require('proxy-agent');
+        } catch (e) {
+          if (logger) {
+            logger.warn('http got adapter: proxing not possible package proxy-agent missing.');
+          }
+        }
       }
       return true;
     } catch (e) {
