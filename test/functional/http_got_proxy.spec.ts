@@ -49,6 +49,15 @@ class HttpGotProxySpec {
   }
 
   // /**
+  //  * faild https over http
+  //  */
+  // @test
+  // async 'fails promise https over http'() {
+  //   const res2 = await http.get(HTTPS_URL, {proxy: `http://does-not-exists.com:12345`, retry: 0});
+  //
+  // }
+
+  // /**
   //  * http over https
   //  */
   // @test
