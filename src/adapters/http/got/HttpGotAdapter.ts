@@ -10,7 +10,7 @@ import {IHttpPutOptions} from '../../../libs/http/IHttpPutOptions';
 import {IHttpHeadOptions} from '../../../libs/http/IHttpHeadOptions';
 import {IHttpPatchOptions} from '../../../libs/http/IHttpPatchOptions';
 import {IHttpGotPromise} from './IHttpGotPromise';
-import {IHttpStream} from '../../../libs/http/IHttpResponse';
+import {IHttpPromise, IHttpStream} from '../../../libs/http/IHttpResponse';
 import {IHttpOptions} from '../../../libs/http/IHttpOptions';
 import {RequestError} from '../../../libs/errors/RequestError';
 import {TimeoutError} from '../../../libs/errors/TimeoutError';
@@ -51,7 +51,6 @@ export class HttpGotAdapter implements IHttp {
       if (_.has(options, 'rejectUnauthorized')) {
         tunnelOptions.rejectUnauthorized = options.rejectUnauthorized;
       }
-
 
       options.agent = <any>new HttpGotAdapter.ProxyAgent(tunnelOptions);
     } else if (_.has(options, 'proxy') && options.proxy && !HttpGotAdapter.ProxyAgent) {
