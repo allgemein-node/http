@@ -1,6 +1,6 @@
 {
   "name": "commons-http",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Library for http request backend abstraction.",
   "main": "index.js",
   "directories": {
@@ -28,11 +28,11 @@
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/glob": "^7.1.1",
-    "@types/got": "^9.6.0",
+    "@types/got": "^9.6.4",
     "@types/gulp": "^4.0.6",
     "@types/lodash": "^4.14.136",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.6.1",
+    "@types/node": "^12.6.8",
     "chai": "^4.2.0",
     "codelyzer": "^5.1.0",
     "del": "^5.0.0",
@@ -45,7 +45,7 @@
     "gulp-shell": "^0.7.1",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-typescript": "^5.0.1",
-    "mocha": "^6.1.4",
+    "mocha": "^6.2.0",
     "mocha-typescript": "^1.1.17",
     "nyc": "^14.1.1",
     "proxy-agent": "^3.1.0",
