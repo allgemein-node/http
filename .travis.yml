@@ -9,7 +9,7 @@ node_js:
   - 14
 
 env:
-  - DOCKER_COMPOSE_VERSION=1.23.1 CI_RUN=1
+  - DOCKER_COMPOSE_VERSION=1.25.1 CI_RUN=1
 
 services:
   - docker
