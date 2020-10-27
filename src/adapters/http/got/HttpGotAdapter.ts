@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import {URL} from 'url';
-import {ILoggerApi} from 'commons-base';
+import {ILoggerApi, JsonUtils} from '@allgemein/base';
 import {IHttp} from '../../../libs/http/IHttp';
 import {IHttpGetOptions} from '../../../libs/http/IHttpGetOptions';
 import {IHttpDeleteOptions} from '../../../libs/http/IHttpDeleteOptions';
@@ -10,7 +10,7 @@ import {IHttpPutOptions} from '../../../libs/http/IHttpPutOptions';
 import {IHttpHeadOptions} from '../../../libs/http/IHttpHeadOptions';
 import {IHttpPatchOptions} from '../../../libs/http/IHttpPatchOptions';
 import {IHttpGotPromise} from './IHttpGotPromise';
-import {IHttpPromise, IHttpStream} from '../../../libs/http/IHttpResponse';
+import {IHttpStream} from '../../../libs/http/IHttpResponse';
 import {IHttpOptions} from '../../../libs/http/IHttpOptions';
 import {RequestError} from '../../../libs/errors/RequestError';
 import {TimeoutError} from '../../../libs/errors/TimeoutError';
@@ -27,7 +27,7 @@ export class HttpGotAdapter implements IHttp {
   readonly name: string = 'got';
 
 
-  private static wrap(url: string, method: string, options: IHttpOptions) {
+  private static wrap(url: string, method: string, options: IHttpOptions & any) {
     const GOT = this.GOT;
 
     if (_.has(options, 'passBody')) {
@@ -52,13 +52,16 @@ export class HttpGotAdapter implements IHttp {
         tunnelOptions.rejectUnauthorized = options.rejectUnauthorized;
       }
 
-      options.agent = <any>new HttpGotAdapter.ProxyAgent(tunnelOptions);
+      const agent = <any>new HttpGotAdapter.ProxyAgent(tunnelOptions);
+
+      options.agent = {};
+      options.agent[proxyUrl.protocol.replace(':', '')] = agent;
     } else if (_.has(options, 'proxy') && options.proxy && !HttpGotAdapter.ProxyAgent) {
       throw new Error('proxy agent not imported');
     }
 
     if (_.has(options, 'stream') && _.get(options, 'stream', false)) {
-      const stream = <any>GOT(url, options);
+      const stream = <any>GOT.stream(url, options);
       stream._ended = false;
       stream.once('response', (res: http.IncomingMessage) => {
         res.once('end', () => {
@@ -84,6 +87,10 @@ export class HttpGotAdapter implements IHttp {
     }
 
 
+    if (_.has(options, 'body') && _.isObjectLike(options['body'])) {
+      options['body'] = JsonUtils.stringify(options['body']);
+    }
+
     let p = null;
     if (options) {
       p = GOT[method](url, options);
@@ -93,6 +100,9 @@ export class HttpGotAdapter implements IHttp {
 
     if (_.get(options, 'passBody', false)) {
       p = p.then((res: any) => {
+        if (options.responseType === 'json') {
+          return res;
+        }
         return res.body;
       });
     }

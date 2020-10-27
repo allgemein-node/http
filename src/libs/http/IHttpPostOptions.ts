@@ -1,5 +1,7 @@
 import {IHttpOptions} from './IHttpOptions';
 
 export interface IHttpPostOptions extends IHttpOptions {
-  body: any;
+  body?: any;
+  json?: any;
+  form?: any;
 }
