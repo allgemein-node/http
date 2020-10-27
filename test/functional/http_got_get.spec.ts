@@ -1,9 +1,10 @@
-import {suite, test, timeout} from 'mocha-typescript';
+import {suite, test, timeout} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {HttpFactory} from '../../src/libs/http/HttpFactory';
 import {IHttp} from '../../src/libs/http/IHttp';
 import {Transform} from 'stream';
 import {RequestError} from '../../src/libs/errors/RequestError';
+import {TimeoutError} from '../../src';
 
 const HTTP_URL = 'http://example.com';
 const HTTPS_URL = 'https://example.com';
@@ -19,7 +20,7 @@ let http: IHttp;
  * TODO
  */
 @suite('functional/http_got') @timeout(20000)
-class Http_got_getSpec {
+class HttpGotGetSpec {
 
 
   static async before() {
@@ -42,7 +43,7 @@ class Http_got_getSpec {
   @test
   async 'http get promise'() {
     const res = await http.get(HTTP_URL);
-    expect(res.body).to.contain('This domain is established to be used for illustrative examples in documents.');
+    expect(res.body).to.contain('This domain is for use in illustrative examples in documents.');
   }
 
 
@@ -51,8 +52,8 @@ class Http_got_getSpec {
    */
   @test
   async 'http get promise as json'() {
-    const res = await http.get(HTTPBIN_URL, {json: true});
-    expect(res.body).to.deep.include({args: {}, url: 'https://httpbin.org/get'});
+    const res = await http.get(HTTPBIN_URL, {responseType: 'json'});
+    expect(res.body).to.deep.include({args: {}, url: 'http://httpbin.org/get'});
   }
 
   /**
@@ -68,7 +69,7 @@ class Http_got_getSpec {
       }
     }));
     const promiseResults = await res.asPromise();
-    expect(content).to.contain('This domain is established to be used for illustrative examples in documents.');
+    expect(content).to.contain('This domain is for use in illustrative examples in documents.');
   }
 
   /**
@@ -77,7 +78,7 @@ class Http_got_getSpec {
   @test
   async 'https get promise'() {
     const res = await http.get(HTTPS_URL);
-    expect(res.body).to.contain('This domain is established to be used for illustrative examples in documents.');
+    expect(res.body).to.contain('This domain is for use in illustrative examples in documents.');
   }
 
   /**
@@ -93,7 +94,7 @@ class Http_got_getSpec {
       }
     }));
     await res.asPromise();
-    expect(content).to.contain('This domain is established to be used for illustrative examples in documents.');
+    expect(content).to.contain('This domain is for use in illustrative examples in documents.');
   }
 
 
@@ -132,7 +133,7 @@ class Http_got_getSpec {
       const res = await http.get(HTTP_URL_ERR, {timeout: 10});
       expect(true).to.be.false;
     } catch (err) {
-      expect(err).to.be.instanceOf(RequestError);
+      expect(err).to.be.instanceOf(TimeoutError);
     }
   }
 
@@ -141,7 +142,7 @@ class Http_got_getSpec {
    */
   @test
   async 'http get promise pass body'() {
-    const res = await http.get(HTTPBIN_URL, {json: true, passBody: true});
+    const res = await http.get(HTTPBIN_URL, {responseType: 'json', passBody: true});
     expect(res).to.be.deep.include({args: {}});
   }
 

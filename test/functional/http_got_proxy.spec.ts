@@ -1,4 +1,4 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {HttpFactory} from '../../src/libs/http/HttpFactory';
 import {IHttp} from '../../src/libs/http/IHttp';

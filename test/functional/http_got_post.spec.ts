@@ -1,4 +1,4 @@
-import {suite, test, timeout} from 'mocha-typescript';
+import {suite, test, timeout} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {HttpFactory} from '../../src/libs/http/HttpFactory';
 import {IHttp} from '../../src/libs/http/IHttp';
@@ -19,7 +19,7 @@ let http: IHttp;
  * TODO
  */
 @suite('functional/http_got_post') @timeout(20000)
-class Http_got_postSpec {
+class HttpGotPostSpec {
 
 
   static async before() {
@@ -63,7 +63,7 @@ class Http_got_postSpec {
    */
   @test
   async 'http post promise, body as json and return'() {
-    const res = await http.post(HTTPBIN_URL, {body: {data: {x: 'y'}}, json: true});
+    const res = await http.post(HTTPBIN_URL, {body: {data: {x: 'y'}}, responseType: 'json'});
     expect(res.body).to.be.deep.include({args: {}});
   }
 
@@ -72,7 +72,7 @@ class Http_got_postSpec {
    */
   @test
   async 'http post promise pass body'() {
-    const res = await http.post(HTTPBIN_URL, {body: {data: {x: 'y'}}, json: true, passBody: true});
+    const res = await http.post(HTTPBIN_URL, {body: {data: {x: 'y'}}, responseType: 'json', passBody: true});
     expect(res).to.be.deep.include({args: {}});
   }
 
