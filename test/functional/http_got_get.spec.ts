@@ -130,7 +130,7 @@ class HttpGotGetSpec {
   @test
   async 'http get promise timeout'() {
     try {
-      const res = await http.get(HTTP_URL_ERR, {timeout: 10});
+      const res = await http.get(HTTP_URL_ERR, {timeout: 1});
       expect(true).to.be.false;
     } catch (err) {
       expect(err).to.be.instanceOf(TimeoutError);

@@ -1,9 +1,9 @@
 
-# node-commons-http
+# @allgemein/http
 
-[![Build Status](https://travis-ci.org/thinkbaer/node-commons-http.svg?branch=master)](https://travis-ci.org/thinkbaer/node-commons-http)
-[![codecov](https://codecov.io/gh/thinkbaer/node-commons-http/branch/master/graph/badge.svg)](https://codecov.io/gh/thinkbaer/node-commons-http)
-[![Dependency Status](https://david-dm.org/thinkbaer/node-commons-http.svg)](https://david-dm.org/thinkbaer/node-commons-http)
+[![Build Status](https://travis-ci.com/allgemein-node/http.svg?branch=master)](https://travis-ci.com/allgemein-node/http)
+[![codecov](https://codecov.io/gh/allgemein-node/http/branch/master/graph/badge.svg)](https://codecov.io/gh/allgemein-node/http)
+[![Dependency Status](https://david-dm.org/allgemein-node/http.svg)](https://david-dm.org/allgemein-node/http)
 
 This is a abstract implementation for a generic http requests api, which can
 be backed by different implementations. Like got, request, node-fetch or others.
@@ -13,7 +13,7 @@ The default implementation is uses got package.
 ## Install
 
 ```js
-npm i commons-http got
+npm i @allgemein/http got
 ```
 
 ## Usage

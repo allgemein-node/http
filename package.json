@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "npx nyc mocha test/functional/{**,**/**}.spec.ts",
-    "posttest": "npx nyc report --reporter=json && codecov -f coverage/*.json"
+    "posttest": "npx nyc report --reporter=json && npx codecov -f coverage/*.json"
   },
   "repository": {
     "type": "git",
@@ -36,6 +36,7 @@
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.14.5",
     "chai": "^4.2.0",
+    "codecov": "^3.8.0",
     "codelyzer": "^6.0.1",
     "del": "^6.0.0",
     "glob": "^7.1.6",
