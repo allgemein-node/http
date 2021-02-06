@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {ILoggerApi} from '@allgemein/base/browser';
+import {ILoggerApi} from '@allgemein/base';
 import {IHttp} from './IHttp';
 import {ClassType} from '../Constants';
 import {HttpGotAdapter} from '../../adapters/http/got/HttpGotAdapter';
