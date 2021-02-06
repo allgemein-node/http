@@ -73,13 +73,13 @@ export class HttpGotAdapter implements IHttp {
         return <IHttpGotPromise<any>>new Promise<any>((resolve, reject) => {
           if (!stream._ended) {
             stream.once('finished', () => {
-              resolve();
+              resolve(null);
             });
             stream.once('error', (err: Error) => {
               reject(err);
             });
           } else {
-            resolve();
+            resolve(null);
           }
         });
       };
